@@ -1,55 +1,139 @@
-from connect.netmiko_connect import connect_device_group
-from config.config_read import DEVICES
 import os
-from render_tpl import render_tpl
-# 根路径
-TPL_ROOT = "./template/config_tpl/"
+import sys
 
-def config_device(device_conn, cmd_list, save_cmd="write memory"):
+# 添加项目根目录到Python路径，解决模块导入问题
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# 导入自定义模块（修复路径后的导入）
+from config.config_read import DEVICES, SETTINGS
+from configure.render_tpl import render_tpl
+
+
+def get_devices_by_group(group_name):
     """
-    单设备配置
+    根据设备组名筛选设备
+    :param group_name: 设备组名（如 "core_switch"、"access_switch"）
+    :return: 该组下的所有设备信息列表
+    """
+    try:
+        # 从配置文件中筛选对应组的设备
+        group_devices = [dev for dev in DEVICES if dev.get("group") == group_name]
+        if not group_devices:
+            raise ValueError(f"未找到设备组 {group_name} 的任何设备")
+        return group_devices
+    except Exception as e:
+        print(f"【错误】筛选设备失败：{e}")
+        return []
+
+
+def connect_device(device_info):
+    """
+    连接网络设备（示例逻辑，可根据实际设备类型扩展）
+    :param device_info: 设备信息字典（包含ip、username、password、device_type等）
+    :return: 设备连接对象（成功）/None（失败）
+    """
+    try:
+        ip = device_info.get("ip")
+        username = device_info.get("username", SETTINGS.get("default_username"))
+        password = device_info.get("password", SETTINGS.get("default_password"))
+        device_type = device_info.get("device_type", "huawei")
+
+        print(f"【连接设备】{ip} ({device_type})")
+        # 这里替换为实际的设备连接逻辑（如使用netmiko/paramiko）
+        # 示例：return netmiko.ConnectHandler(**device_info)
+        return {"status": "success", "ip": ip}  # 模拟连接成功
+    except Exception as e:
+        print(f"【连接失败】{device_info.get('ip')}：{e}")
+        return None
+
+
+def send_config(device_conn, config_cmds):
+    """
+    向设备下发配置
     :param device_conn: 设备连接对象
-    :param cmd_list: 指令列表
-    :param save_cmd: 设备保存指令（不同品牌适配）
-    :return: 配置结果（成功/失败）、配置输出
+    :param config_cmds: 配置命令列表
+    :return: 下发结果（True/False）
     """
     if not device_conn:
-        return "失败", "设备未连接"
+        return False
     try:
-        # 发送配置指令（配置模式）
-        output = device_conn.send_config_set(cmd_list)
-        # 保存配置
-        device_conn.send_command(save_cmd)
-        device_conn.exit_config_mode()
-        return "成功", output
+        ip = device_conn.get("ip")
+        print(f"【下发配置】{ip}：")
+        for cmd in config_cmds:
+            print(f"  - {cmd}")
+        # 这里替换为实际的配置下发逻辑
+        # 示例：device_conn.send_config_set(config_cmds)
+        return True
     except Exception as e:
-        return "失败", str(e)
+        print(f"【配置下发失败】{device_conn.get('ip')}：{e}")
+        return False
+
 
 def batch_config(group_name, tpl_name, **tpl_kwargs):
     """
-    设备组批量配置
+    批量配置核心函数
     :param group_name: 设备组名
-    :param tpl_name: 模板文件名（如vlan_tpl.txt）
-    :param tpl_kwargs: 模板占位符参数
-    :return: 批量配置结果字典{设备名: (结果, 输出)}
+    :param tpl_name: 模板文件名（如 "vlan_tpl.txt"，无需路径）
+    :param tpl_kwargs: 模板渲染参数（如 vlan_id=100, vlan_name="office"）
+    :return: 批量配置结果字典
     """
-    # 加载模板并渲染指令
-    tpl_path = os.path.join(TPL_ROOT, tpl_name)
-    cmd_list = render_tpl(tpl_path, **tpl_kwargs)
-    # 批量连接设备
-    conn_dict = connect_device_group(group_name)
-    # 逐台配置
-    result_dict = {}
-    for device_name, conn in conn_dict.items():
-        # 适配不同品牌保存指令
-        save_cmd = "write memory" if "cisco" in DEVICES[group_name][0]["device_type"] else "save"
-        result, output = config_device(conn, cmd_list, save_cmd)
-        result_dict[device_name] = (result, output)
-        # 关闭连接
-        if conn:
-            conn.disconnect()
-    return result_dict
+    result = {
+        "total": 0,
+        "success": 0,
+        "failed": [],
+        "group_name": group_name
+    }
 
+    # 1. 筛选目标设备
+    devices = get_devices_by_group(group_name)
+    if not devices:
+        result["error"] = "无可用设备"
+        return result
+    result["total"] = len(devices)
+
+    # 2. 渲染配置模板（仅传文件名，路径由render_tpl处理）
+    try:
+        tpl_content = render_tpl(tpl_name, **tpl_kwargs)
+        # 将模板内容按行分割为配置命令列表（过滤空行）
+        config_cmds = [cmd.strip() for cmd in tpl_content.split("\n") if cmd.strip()]
+        if not config_cmds:
+            raise ValueError("模板渲染后无有效配置命令")
+    except Exception as e:
+        result["error"] = f"模板渲染失败：{e}"
+        return result
+
+    # 3. 遍历设备执行配置
+    for dev in devices:
+        # 连接设备
+        dev_conn = connect_device(dev)
+        if not dev_conn:
+            result["failed"].append(dev.get("ip"))
+            continue
+
+        # 下发配置
+        if send_config(dev_conn, config_cmds):
+            result["success"] += 1
+        else:
+            result["failed"].append(dev.get("ip"))
+
+    # 4. 返回执行结果
+    return result
+
+
+# 测试代码（直接运行该文件时执行）
 if __name__ == "__main__":
-    result = batch_config("switch_group_a", "vlan_tpl.txt", vlan_id=10, vlan_name="IT", interface="GigabitEthernet0/1")
-    print(result)
+    # 示例：给core_switch组下发vlan配置
+    test_result = batch_config(
+        group_name="core_switch",
+        tpl_name="vlan_tpl.txt",  # 仅传文件名，路径由render_tpl处理
+        vlan_id=100,
+        vlan_name="office_network"
+    )
+    print("\n【批量配置结果】")
+    print(f"设备组：{test_result['group_name']}")
+    print(f"总设备数：{test_result['total']}")
+    print(f"成功数：{test_result['success']}")
+    if test_result["failed"]:
+        print(f"失败设备：{','.join(test_result['failed'])}")
+    if "error" in test_result:
+        print(f"错误信息：{test_result['error']}")

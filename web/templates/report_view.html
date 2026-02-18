@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}巡检报告 - {{ report_name }}{% endblock %}
+{% block content %}
+<h2>巡检报告：{{ report_name }}</h2>
+<div class="result-box">
+    <pre>{{ report_data | tojson(indent=2) }}</pre>
+</div>
+<a href="/inspect" class="btn" style="margin-top: 10px;">返回巡检页面</a>
+{% endblock %}

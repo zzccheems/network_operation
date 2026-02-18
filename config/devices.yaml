@@ -1,6 +1,6 @@
 # 机房A-华为交换机组
 switch_group_a:
-  - device_type: huawei_vrpv8    # Netmiko适配华为VRP8系统
+  - device_type: huawei_vrpv8
     ip: 192.168.1.101
     username: admin
     password: Huawei@123
