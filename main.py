@@ -1,49 +1,41 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Python网络自动化运维系统 - 主程序入口
-路径：network_operation/main.py
-"""
+#主程序
 import os
 import sys
-import threading
+import threading  #多线程并发
 import time
-import ast  # 提前导入，避免局部导入报错
+import ast  # 安全解析用户输入字典参数
 
-# ========== 核心修复1：添加项目根目录到Python路径 ==========
+# 添加项目根目录到路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# ========== 核心修复2：适配实际项目架构的导入 ==========
-# 1. 批量配置模块（实际文件：configure/batch_configuration.py）
+# 适配实际项目架构的导入
+# 1. 批量配置模块导包
 try:
     from configure.batch_configuration import batch_config
 except ImportError as e:
-    logger = None  # 先占位，避免日志未初始化时报错
+    logger = None  # 占位，避免日志未初始化时报错
 
 
-    # 定义占位函数，避免程序崩溃
+    # 占位函数，防止程序崩溃
     def batch_config(group_name, tpl_name, **kwargs):
         return {
             "error": f"批量配置模块导入失败：{str(e)}，请检查 configure/batch_configuration.py"
         }
 
-# 2. 巡检模块（兼容 batch_inspect.py / inspect_core.py）
+# 2. 巡检模块导包
 try:
     from inspect_module.batch_inspect import batch_inspect
-except ImportError:
-    try:
-        from inspect_module.inspect_core import batch_inspect
-    except ImportError as e:
-        # 定义占位函数
-        def batch_inspect(group_name):
-            return {
-                "error": f"巡检模块导入失败：{str(e)}，请检查 inspect_module 下的文件"
-            }
+except ImportError as e:
+    #占位函数
+    def batch_inspect(group_name):
+        return {
+            "error": f"巡检模块导入失败：{str(e)}，请检查 inspect_module 下的文件"
+        }
 
 
-# ========== 核心修复3：统一日志模块 ==========
+# 统一日志模块
 def init_main_logger():
-    """初始化全局日志（主程序+巡检共用）"""
+    #初始化全局日志
     import logging
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
     if not os.path.exists(log_dir):
@@ -60,13 +52,13 @@ def init_main_logger():
     return logging.getLogger(__name__)
 
 
-# 全局日志实例
+# 全局日志实例,整个程序都使用此实例对象
 logger = init_main_logger()
 
 
-# ========== 核心修复4：定时巡检函数 ==========
+# 定时巡检函数
 def scheduled_inspect(interval=3600, group_names=["switch_group_a", "router_group_b"]):
-    """定时巡检服务（使用全局 logger）"""
+   #定时巡检使用全局日志实例对象
     logger.info(f"定时巡检服务启动，间隔{interval}秒，巡检组：{group_names}")
     while True:
         try:
@@ -79,11 +71,10 @@ def scheduled_inspect(interval=3600, group_names=["switch_group_a", "router_grou
             time.sleep(interval)
         except Exception as e:
             logger.error(f"定时巡检异常：{str(e)}")
-            time.sleep(60)  # 异常时暂停1分钟再重试
+            time.sleep(60)
 
-
-# ========== 核心修复5：完整的Web服务逻辑（修复空函数问题） ==========
-# 优先导入自定义 Web 模块
+# 完整的Web服务逻辑
+# 导入自定义 Web模块
 try:
     from web.app import app as flask_app
 
@@ -91,26 +82,23 @@ try:
 except ImportError:
     logger.warning("未找到自定义Web模块，启用内置简易Web服务")
 
-
-    # 完整的备用Web服务实现（不再是空函数）
+    # 完整的备用Web服务函数
     def init_flask_app():
-        """初始化简易Web服务"""
         try:
             from flask import Flask, jsonify
+            #创建应用实例
             app = Flask(__name__)
-
             # 首页
             @app.route('/', methods=['GET'])
             def index():
                 return """
-                <h1>Python网络自动化运维系统（简易版）</h1>
+                <h1>Python网络自动化运维系统</h1>
                 <p>接口说明：</p>
                 <ul>
                     <li>GET /inspect/[group_name] - 获取指定设备组巡检结果</li>
                     <li>示例：/inspect/switch_group_a</li>
                 </ul>
                 """
-
             # 巡检接口
             @app.route('/inspect/<group_name>', methods=['GET'])
             def get_inspect_result(group_name):
@@ -137,9 +125,8 @@ except ImportError:
     flask_app = init_flask_app()
 
 
-# ========== 系统菜单 ==========
+#系统菜单
 def show_menu():
-    """显示操作菜单（极致对齐版）"""
     menu = """
 ╔═══════════════════════════════════════════════════════════════╗
 ║                    Python网络自动化运维系统                       ║
@@ -200,7 +187,6 @@ if __name__ == "__main__":
                     continue
                 logger.info(f"开始单次巡检：设备组{group_name}")
                 result = batch_inspect(group_name)
-
                 # 兼容错误返回格式
                 if "error" in result:
                     print(f"巡检失败：{result['error']}")
@@ -228,7 +214,6 @@ if __name__ == "__main__":
                 group_names = [g.strip() for g in group_names.split(",")] if group_names else ["switch_group_a"]
                 # 过滤空值
                 group_names = [g for g in group_names if g]
-
                 # 启动子线程
                 t = threading.Thread(
                     target=scheduled_inspect,
@@ -256,7 +241,6 @@ if __name__ == "__main__":
                 host = input("请输入Web服务监听地址（默认0.0.0.0）：").strip() or "0.0.0.0"
                 port_input = input("请输入Web服务端口（默认5000）：").strip()
                 port = int(port_input) if port_input and port_input.isdigit() else 5000
-
                 # 启动子线程
                 t = threading.Thread(
                     target=flask_app.run,
@@ -264,9 +248,8 @@ if __name__ == "__main__":
                     daemon=True
                 )
                 t.start()
-
-                logger.info(f"【Web服务】已启动，访问地址：http://{host}:{port}")
-                print(f"Web可视化服务已启动，访问地址：http://{host}:{port}")
+                logger.info(f"【Web服务】已启动，访问地址：https://{host}:{port}")
+                print(f"Web可视化服务已启动，访问地址：https://{host}:{port}")
             except ValueError:
                 logger.error("Web端口输入错误：请输入数字")
                 print("错误：端口号必须是数字！")

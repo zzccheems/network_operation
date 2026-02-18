@@ -1,9 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-设备连接模块：基于Netmiko连接华为设备
-路径：netmiko_connect.py
-"""
+#设备连接模块：基于Netmiko连接华为设备
+
 import logging
 from netmiko import ConnectHandler
 from netmiko.exceptions import NetMikoTimeoutException, NetMikoAuthenticationException
@@ -12,11 +8,11 @@ from config.config_read import DEVICES, SETTINGS
 import os
 import sys
 
-# ========== 基础配置 ==========
-# 添加项目根目录到Python路径
+# 基础配置
+# 添加项目根目录到路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# 创建日志目录（绝对路径）
+# 创建日志目录,用绝对路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 log_dir = os.path.join(current_dir, "logs")
 if not os.path.exists(log_dir):
@@ -34,16 +30,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# ========== 核心函数 ==========
+#心函数
 def connect_device(device_info, retry=3):
-    """
-    单设备连接（不再依赖 SETTINGS）
-    """
-    # 直接从 device_info 取，不再用 SETTINGS
+
     netmiko_params = {
         "device_type": device_info.get("device_type", "huawei_vrpv8"),
         "ip": device_info["ip"],
-        "username": device_info.get("username", "admin"),  # 直接用硬编码默认值
+        "username": device_info.get("username", "admin"),
         "password": device_info.get("password", "Huawei@123"),
         "port": device_info.get("port", 22),
         "timeout": 10
@@ -51,7 +44,7 @@ def connect_device(device_info, retry=3):
     netmiko_params = {k: v for k, v in netmiko_params.items() if v is not None}
 
 
-    # 2. 提取自定义字段（用于日志，不传给Netmiko）
+    # 2. 提取自定义字段
     device_name = device_info.get("device_name", device_info["ip"])
     device_ip = device_info["ip"]
 
@@ -61,7 +54,7 @@ def connect_device(device_info, retry=3):
             # 建立SSH连接
             conn = ConnectHandler(**netmiko_params)
 
-            # 特权模式（如果有secret）
+            # 特权模式
             if "secret" in device_info:
                 conn.enable()
 
@@ -98,19 +91,19 @@ def connect_device(device_info, retry=3):
 
 def connect_device_group(group_name):
     """
-    批量连接指定设备组（适配你的嵌套字典格式）
-    :param group_name: 设备组名（如 switch_group_a）
+    批量连接指定设备组
+    :param group_name: 设备组名
     :return: 连接字典 {device_name: conn}
     """
     conn_dict = {}
 
-    # 1. 检查组名是否存在
+    # 1. 检查组名
     if group_name not in DEVICES:
         error_msg = f"设备组 {group_name} 不存在！可用组名：{list(DEVICES.keys())}"
         logger.error(error_msg)
         raise KeyError(error_msg)
 
-    # 2. 获取该组的所有设备
+    # 2. 获取该组所有设备
     group_devices = DEVICES[group_name]
     total = len(group_devices)
     logger.info(f"开始批量连接设备组 {group_name}，共{total}台设备")
@@ -132,13 +125,12 @@ def connect_device_group(group_name):
     return conn_dict
 
 
-# ========== 测试代码 ==========
+#测试代码
 if __name__ == "__main__":
     try:
         # 连接 switch_group_a 组
         conn_dict = connect_device_group("switch_group_a")
-
-        # 遍历连接执行巡检命令
+        # 遍历连接,执行巡检命令
         for dev_name, conn in conn_dict.items():
             try:
                 print(f"\n===== 执行 {dev_name} 巡检 =====")
@@ -151,7 +143,7 @@ if __name__ == "__main__":
                 logger.error(f"{dev_name} 执行命令失败：{str(e)}")
                 print(f"{dev_name} 执行命令失败：{str(e)}")
             finally:
-                # 确保连接断开
+                #连接断开
                 conn.disconnect()
                 logger.info(f"{dev_name} 已断开连接")
                 print(f"{dev_name} 已断开连接")

@@ -1,10 +1,11 @@
+#读取端口限速模板和vlan模板模块
+
 import os
 
-
 def render_tpl(tpl_name, **tpl_kwargs):
-    # 获取当前脚本所在目录 (D:\network_operation\configure)
+    # 获取当前脚本所在目录
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    # 模板文件就在同目录下的 config_tpl 文件夹里
+    # 模板文件路径
     tpl_dir = os.path.join(current_dir, "config_tpl")
     # 拼接出模板文件的绝对路径
     tpl_path = os.path.join(tpl_dir, tpl_name)
@@ -17,3 +18,6 @@ def render_tpl(tpl_name, **tpl_kwargs):
 
     # 渲染模板
     return tpl_content.format(**tpl_kwargs)
+
+if __name__ == '__main__':
+    render_tpl( "vlan_tpl.txt",vlan_id=10, vlan_name="net",interface="GigabitEthernet0/0/1")

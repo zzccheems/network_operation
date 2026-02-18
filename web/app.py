@@ -1,29 +1,25 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-网络自动化运维系统 - Web 可视化模块
-路径：network_operation/web/app.py
-"""
+#Web 可视化模块
+
 import os
 import sys
 import json
 from datetime import datetime
 
-# 添加项目根目录到Python路径
+# 添加项目根目录到路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 # 导入核心功能模块
 from inspect_module.batch_inspect import batch_inspect
 from configure.batch_configuration import batch_config
-from log.log_record import logger  # 如果有独立日志模块，否则用内置
+from log.log_record import logger  # 如果有独立日志模块就用，否则用内置日志
 
 # 初始化Flask应用
 app = Flask(__name__,
             template_folder=os.path.join(os.path.dirname(__file__), "templates"),
             static_folder=os.path.join(os.path.dirname(__file__), "static"))
 
-# ========== 全局配置 ==========
+#局配置
 # 巡检报告目录
 INSPECT_REPORT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                   "inspect_module", "inspect_report")
@@ -39,11 +35,11 @@ for dir_path in [INSPECT_REPORT_DIR, CONFIG_TPL_DIR, LOG_DIR]:
         os.makedirs(dir_path)
 
 
-# ========== 页面路由 ==========
+#页面路由
 @app.route('/')
 def index():
-    """首页：系统概览"""
-    # 获取所有设备组（从devices.yaml读取）
+    """系统概览"""
+    # 获取所有设备组（devices.yaml）
     try:
         from config.config_read import DEVICES
         group_names = list(DEVICES.keys()) if isinstance(DEVICES, dict) else []
@@ -57,7 +53,7 @@ def index():
 
 @app.route('/inspect', methods=['GET', 'POST'])
 def inspect_page():
-    """设备巡检页面"""
+    """设备巡检"""
     if request.method == 'POST':
         # 执行巡检
         group_name = request.form.get('group_name')
@@ -67,7 +63,7 @@ def inspect_page():
         try:
             # 执行批量巡检
             result = batch_inspect(group_name)
-            # 保存巡检结果（和本地报告同步）
+            # 保存巡检结果（同步本地报告）
             report_name = f"{group_name}_inspect_{datetime.now().strftime('%Y%m%d%H%M%S')}.json"
             report_path = os.path.join(INSPECT_REPORT_DIR, report_name)
             with open(report_path, 'w', encoding='utf-8') as f:
@@ -84,13 +80,12 @@ def inspect_page():
             logger.error(f"Web端巡检失败：{str(e)}")
             return jsonify({"status": "error", "message": str(e)})
 
-    # GET请求：展示巡检页面
+    # GET请求：查看巡检页面
     try:
         from config.config_read import DEVICES
         group_names = list(DEVICES.keys()) if isinstance(DEVICES, dict) else []
     except:
         group_names = ["switch_group_a", "router_group_b"]
-
     # 获取历史巡检报告
     report_files = []
     if os.path.exists(INSPECT_REPORT_DIR):
@@ -104,7 +99,7 @@ def inspect_page():
 
 @app.route('/config', methods=['GET', 'POST'])
 def config_page():
-    """批量配置页面"""
+    """批量配置"""
     if request.method == 'POST':
         # 执行批量配置
         group_name = request.form.get('group_name')
@@ -115,7 +110,7 @@ def config_page():
             return jsonify({"status": "error", "message": "设备组和模板名不能为空"})
 
         try:
-            # 解析模板参数
+            # 安全解析模板参数
             import ast
             tpl_kwargs = ast.literal_eval(tpl_params) if tpl_params else {}
             # 执行批量配置
@@ -150,7 +145,7 @@ def config_page():
 
 @app.route('/logs')
 def logs_page():
-    """日志查看页面"""
+    """日志查看"""
     log_files = []
     if os.path.exists(LOG_DIR):
         log_files = [f for f in os.listdir(LOG_DIR) if f.endswith('.log')]
@@ -161,10 +156,10 @@ def logs_page():
     log_path = os.path.join(LOG_DIR, selected_log)
 
     if os.path.exists(log_path):
-        # 读取最后100行，避免日志过大
+        # 避免日志过大,只显示最后100行
         with open(log_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
-            log_content = ''.join(lines[-100:])  # 只显示最后100行
+            log_content = ''.join(lines[-100:])
 
     return render_template('logs.html',
                            log_files=log_files,
@@ -187,7 +182,7 @@ def view_report(report_name):
                            report_data=report_data)
 
 
-# ========== 错误处理 ==========
+#错误处理
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -198,7 +193,6 @@ def server_error(e):
     return render_template('500.html', error_msg=str(e)), 500
 
 
-# ========== 启动入口 ==========
+#启动入口
 if __name__ == '__main__':
-    # 开发环境启动（生产环境建议用Gunicorn）
     app.run(host='0.0.0.0', port=5000, debug=False)

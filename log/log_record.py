@@ -19,14 +19,14 @@ formatter = logging.Formatter(fmt)
 # 初始化日志器
 logger = logging.getLogger("net_automation")
 logger.setLevel(LOG_LEVEL)
-logger.handlers.clear()  # 避免重复添加处理器
+logger.handlers.clear()
 
 # 1. 控制台日志处理器
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
-# 2. 文件日志处理器（按日期分割，保留7天）
+# 2. 文件日志处理器,保留7天
 file_handler = TimedRotatingFileHandler(
     filename=os.path.join(LOG_PATH, "net_automation.log"),
     when="D",
@@ -45,5 +45,5 @@ def exception_catch(func):
             return func(*args, **kwargs)
         except Exception as e:
             logger.error(f"函数{func.__name__}执行异常：{str(e)}", exc_info=True)
-            raise e  # 可选：抛出异常，让上层处理
+            raise e
     return wrapper
