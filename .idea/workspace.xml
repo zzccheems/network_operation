@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3f94645d-c515-4710-b73a-282b6d39af99" name="更改" comment="new" />
+    <list default="true" id="3f94645d-c515-4710-b73a-282b6d39af99" name="更改" comment="init" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -128,6 +128,7 @@
     <MESSAGE value="init: 初始化network_operation项目，完成核心功能开发" />
     <MESSAGE value="test" />
     <MESSAGE value="new" />
-    <option name="LAST_COMMIT_MESSAGE" value="new" />
+    <MESSAGE value="init: 仅保留当前代码" />
+    <option name="LAST_COMMIT_MESSAGE" value="init: 仅保留当前代码" />
   </component>
 </project>
