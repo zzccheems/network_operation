@@ -1,0 +1,4 @@
+# 查询设备SW-A01的所有日志
+grep "SW-A01" ./logs/net_automation.log
+# 查询所有错误日志
+grep "ERROR" ./logs/net_automation.log

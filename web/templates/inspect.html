@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}设备巡检 - 网络自动化运维系统{% endblock %}
+{% block style %}
+.result-box { font-family: monospace; }
+.loading { display: none; color: #3498db; }
+{% endblock %}
+{% block content %}
+<h2>设备巡检</h2>
+<form id="inspectForm" method="post">
+    <div style="margin: 10px 0;">
+        <label>选择设备组：</label>
+        <select name="group_name" required style="padding: 5px; width: 200px;">
+            {% for group in group_names %}
+                <option value="{{ group }}">{{ group }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn">执行巡检</button>
+    <div class="loading">正在巡检，请稍候...</div>
+</form>
+
+<div id="resultArea" class="result-box" style="display: none;"></div>
+
+<h3 style="margin-top: 30px;">历史巡检报告</h3>
+{% if report_files %}
+    <ul style="margin-left: 20px;">
+        {% for file in report_files %}
+            <li><a href="/report/{{ file }}">{{ file }}</a></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>暂无历史巡检报告</p>
+{% endif %}
+
+<script>
+// 异步执行巡检
+document.getElementById('inspectForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const loading = document.querySelector('.loading');
+    const resultArea = document.getElementById('resultArea');
+    
+    loading.style.display = 'block';
+    resultArea.style.display = 'none';
+    
+    fetch('/inspect', {
+        method: 'POST',
+        body: formData
+    }).then(response => response.json())
+      .then(data => {
+          loading.style.display = 'none';
+          resultArea.style.display = 'block';
+          if (data.status === 'success') {
+              resultArea.innerHTML = '<div class="success">巡检成功！</div>' + 
+                                    '<pre>' + JSON.stringify(data.result, null, 2) + '</pre>';
+          } else {
+              resultArea.innerHTML = '<div class="error">巡检失败：' + data.message + '</div>';
+          }
+      })
+      .catch(error => {
+          loading.style.display = 'none';
+          resultArea.style.display = 'block';
+          resultArea.innerHTML = '<div class="error">请求失败：' + error + '</div>';
+      });
+});
+</script>
+{% endblock %}
