@@ -4,3 +4,10 @@
 2026-02-19 22:02:47,542 - INFO - 开始批量配置设备组 switch_group_a，共 12 台设备
 2026-02-19 22:02:57,550 - WARNING - [失败] 设备 华为S5700-A01 (192.168.1.101) 连接超时，第1次重试
 2026-02-19 22:03:54,580 - INFO - 开始批量连接设备组 switch_group_a，共12台设备
+2026-02-19 22:14:27,331 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.18:5000
+2026-02-19 22:14:27,331 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-19 22:14:30,695 - INFO - 成功导入自定义Web模块（web/app.py）
+2026-02-19 22:14:30,695 - INFO - 【系统启动】Python网络自动化运维系统开始运行
