@@ -1,20 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3f94645d-c515-4710-b73a-282b6d39af99" name="更改" comment="test">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config_read.py" beforeDir="false" afterPath="$PROJECT_DIR$/config/config_read.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configure/batch_configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/configure/batch_configuration.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configure/render_tpl.py" beforeDir="false" afterPath="$PROJECT_DIR$/configure/render_tpl.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/connect/logs/connect.log" beforeDir="false" afterPath="$PROJECT_DIR$/connect/logs/connect.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/connect/netmiko_connect.py" beforeDir="false" afterPath="$PROJECT_DIR$/connect/netmiko_connect.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inspect_module/batch_inspect.py" beforeDir="false" afterPath="$PROJECT_DIR$/inspect_module/batch_inspect.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inspect_module/scheduled_inspect.py" beforeDir="false" afterPath="$PROJECT_DIR$/inspect_module/scheduled_inspect.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/log/global_catch.py" beforeDir="false" afterPath="$PROJECT_DIR$/log/global_catch.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/log/log_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/log/log_record.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/web/app.py" afterDir="false" />
-    </list>
+    <list default="true" id="3f94645d-c515-4710-b73a-282b6d39af99" name="更改" comment="new" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -28,6 +15,7 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -125,12 +113,21 @@
       <option name="project" value="LOCAL" />
       <updated>1771427260726</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="new">
+      <option name="closed" value="true" />
+      <created>1771510558931</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1771510558931</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="init: 初始化network_operation项目，完成核心功能开发" />
     <MESSAGE value="test" />
-    <option name="LAST_COMMIT_MESSAGE" value="test" />
+    <MESSAGE value="new" />
+    <option name="LAST_COMMIT_MESSAGE" value="new" />
   </component>
 </project>
