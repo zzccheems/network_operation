@@ -129,6 +129,8 @@
     <MESSAGE value="test" />
     <MESSAGE value="new" />
     <MESSAGE value="init: 仅保留当前代码" />
-    <option name="LAST_COMMIT_MESSAGE" value="init: 仅保留当前代码" />
+    <MESSAGE value="init" />
+    <MESSAGE value="更新内容" />
+    <option name="LAST_COMMIT_MESSAGE" value="更新内容" />
   </component>
 </project>
